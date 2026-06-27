@@ -336,7 +336,8 @@ main() {
     table_lines+=("$repo_name$(printf '\t')$status_col$(printf '\t')$branch_short$(printf '\t')$duration_str$(printf '\t')$workflow_short")
   done <<<"$sorted"
 
-  printf '%b\n' "$(printf '%s\n' "${table_lines[@]}" | column -t -s $'\t' -o $'\t')"
+  # BSD column (macOS) lacks GNU's -o; spaces as output sep work on both.
+  printf '%b\n' "$(printf '%s\n' "${table_lines[@]}" | column -t -s $'\t')"
 
   local show_url=false
   while IFS= read -r item; do
