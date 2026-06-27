@@ -1,0 +1,10 @@
+micro
+glow
+kitty
+lsd
+gh
+jq
+procps
+stow
+curl
+ca-certificates

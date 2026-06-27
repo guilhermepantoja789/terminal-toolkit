@@ -1,0 +1,76 @@
+# Shared shell setup for bash and zsh (sourced from dotfiles).
+
+: "${DOTFILES_DIR:=$HOME/dotfiles}"
+
+export PATH="$HOME/.local/bin:$HOME/.config/composer/vendor/bin:$PATH"
+export EDITOR="micro"
+export VISUAL="micro"
+
+# Optional runtimes (no-op if not installed)
+[[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"
+export NVM_DIR="$HOME/.config/nvm"
+[[ -s "$NVM_DIR/nvm.sh" ]] && . "$NVM_DIR/nvm.sh"
+if [[ -n "${BASH_VERSION:-}" && -s "$NVM_DIR/bash_completion" ]]; then
+  . "$NVM_DIR/bash_completion"
+fi
+
+parse_git_branch() {
+  git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
+}
+
+if [[ -n "${SSH_CONNECTION:-}" || -n "${SSH_CLIENT:-}" ]]; then
+  export SSH_SESSION=yes
+  SSH_INDICATOR=$'\033[33m[SSH]\033[0m '
+else
+  export SSH_SESSION=no
+  SSH_INDICATOR=""
+fi
+
+y() {
+  local tmp
+  tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
+  yazi "$@" --cwd-file="$tmp"
+  if cwd="$(command cat -- "$tmp")" && [[ -n "$cwd" && "$cwd" != "$PWD" ]]; then
+    builtin cd -- "$cwd"
+  fi
+  rm -f -- "$tmp"
+}
+
+mdwatch() {
+  if [[ -z "${1:-}" ]]; then
+    echo "Erro: Você precisa informar o arquivo."
+    echo "Uso: mdwatch <arquivo.md>"
+    return 1
+  fi
+
+  watchexec -c -e md "env CLICOLOR_FORCE=1 glow -s ${XDG_CONFIG_HOME:-$HOME/.config}/glow/tema-flow.json -w \$(tput cols) '$1'"
+}
+
+alias view-actions='watch -c -n 15 "$HOME/.local/bin/ci-status"'
+
+setup_prompt_bash() {
+  local COLOR_USER="\[\e[36m\]"
+  local COLOR_DIR="\[\e[35m\]"
+  local COLOR_GIT="\[\e[31m\]"
+  local COLOR_RESET="\[\e[0m\]"
+  local COLOR_SSH="\[\e[33m\]"
+  local ssh_indicator=""
+
+  if [[ "$SSH_SESSION" == "yes" ]]; then
+    ssh_indicator="${COLOR_SSH}[SSH]${COLOR_RESET} "
+  fi
+
+  PS1="${ssh_indicator}${COLOR_USER}\u${COLOR_RESET}:${COLOR_DIR}\W${COLOR_RESET}${COLOR_GIT}\$(parse_git_branch)${COLOR_RESET} \$ "
+}
+
+setup_prompt_zsh() {
+  autoload -Uz colors && colors
+  setopt PROMPT_SUBST
+
+  zssh_indicator=""
+  if [[ "$SSH_SESSION" == "yes" ]]; then
+    zssh_indicator='%F{yellow}[SSH]%f '
+  fi
+
+  PROMPT="${zssh_indicator}%F{cyan}%n%f:%F{magenta}%1~%f%F{red}\$(parse_git_branch)%f \$ "
+}

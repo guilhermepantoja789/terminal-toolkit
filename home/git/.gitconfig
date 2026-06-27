@@ -1,0 +1,9 @@
+[user]
+	email = guilhermepantoja789@gmail.com
+	name = Guilherme Pantoja
+[init]
+	defaultBranch = main
+[credential "https://github.com"]
+	helper = !gh auth git-credential
+[credential "https://gist.github.com"]
+	helper = !gh auth git-credential

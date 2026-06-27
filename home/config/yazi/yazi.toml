@@ -1,0 +1,9 @@
+[opener]
+edit = [
+    { run = 'micro "$@"', block = true, desc = "micro" },
+]
+
+[open]
+prepend_rules = [
+    { mime = "text/*", use = "edit" }
+]

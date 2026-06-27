@@ -1,0 +1,62 @@
+{
+    "document": {
+        "block_prefix": "\n",
+        "block_suffix": "\n",
+        "margin": 2
+    },
+    "heading": {
+        "bold": true
+    },
+    "h1": {
+        "background_color": "#4B0082",
+        "color": "#ffffff",
+        "prefix": " ",
+        "suffix": " "
+    },
+    "h2": {
+        "color": "#00FF7F"
+    },
+    "h3": {
+        "color": "#FFA500"
+    },
+    "h4": {
+        "color": "#00BFFF"
+    },
+    "strong": {
+        "color": "#F1FA8C",
+        "bold": true
+    },
+    "emph": {
+        "color": "#FFB86C",
+        "italic": true
+    },
+    "code": {
+        "color": "#FF79C6",
+        "background_color": "#282A36",
+        "prefix": " ",
+        "suffix": " "
+    },
+    "code_block": {
+        "margin": 2,
+        "theme": "dracula"
+    },
+    "quote": {
+        "color": "#9E9E9E",
+        "prefix": "┃ "
+    },
+    "link": {
+        "color": "#8BE9FD",
+        "underline": true
+    },
+    "list": {
+        "margin": 2
+    },
+    "item": {
+        "block_prefix": "• "
+    },
+    "enumeration": {
+        "block_prefix": ". ",
+        "color": "#8BE9FD",
+        "bold": true
+    }
+}
