@@ -1,6 +1,6 @@
 brew "micro"
 brew "glow"
-brew "kitty"
+cask "kitty"
 brew "lsd"
 brew "gh"
 brew "jq"
