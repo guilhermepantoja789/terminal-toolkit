@@ -43,13 +43,17 @@ mdwatch() {
     return 1
   fi
 
-  watchexec -c -e md "env CLICOLOR_FORCE=1 glow -s ${XDG_CONFIG_HOME:-$HOME/.config}/glow/tema-flow.json -w \$(tput cols) '$1'"
+  local theme cols
+  theme="${XDG_CONFIG_HOME:-$HOME/.config}/glow/tema-flow.json"
+  cols="$(tput cols 2>/dev/null || echo 80)"
+  # Pass args after -- so filenames with spaces/quotes are safe.
+  watchexec -c -e md -- env CLICOLOR_FORCE=1 glow -s "$theme" -w "$cols" "$1"
 }
 
-alias view-actions='watch -c -n 15 "$HOME/.local/bin/ci-status"'
+alias view-actions='watch -c -n 15 -- "$HOME/.local/bin/ci-status"'
 
 setup_prompt_bash() {
-  local COLOR_USER="\[\e[36m\]"
+  local COLOR_USER="\[\e[93m\]"
   local COLOR_DIR="\[\e[35m\]"
   local COLOR_GIT="\[\e[31m\]"
   local COLOR_RESET="\[\e[0m\]"
@@ -72,5 +76,6 @@ setup_prompt_zsh() {
     zssh_indicator='%F{yellow}[SSH]%f '
   fi
 
-  PROMPT="${zssh_indicator}%F{cyan}%n%f:%F{magenta}%1~%f%F{red}\$(parse_git_branch)%f \$ "
+  # Username: bright yellow (pairs with Kitty Phanes gold accents)
+  PROMPT="${zssh_indicator}%F{11}%n%f:%F{magenta}%1~%f%F{red}\$(parse_git_branch)%f \$ "
 }
