@@ -18,12 +18,33 @@ parse_git_branch() {
   git branch 2>/dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/ (\1)/'
 }
 
+# SSH_CONNECTION: client_ip client_port server_ip server_port
+# Prefer server IP (host you landed on); fall back to client IP from SSH_CLIENT.
+# Portable across bash and zsh (zsh does not split unquoted words by default).
+ssh_connection_ip() {
+  local ip="" rest
+  if [[ -n "${SSH_CONNECTION:-}" ]]; then
+    rest="${SSH_CONNECTION}"
+    # skip client_ip
+    rest="${rest#* }"
+    # skip client_port
+    rest="${rest#* }"
+    # server_ip is next field
+    ip="${rest%% *}"
+  elif [[ -n "${SSH_CLIENT:-}" ]]; then
+    ip="${SSH_CLIENT%% *}"
+  fi
+  printf '%s' "$ip"
+}
+
 if [[ -n "${SSH_CONNECTION:-}" || -n "${SSH_CLIENT:-}" ]]; then
   export SSH_SESSION=yes
-  SSH_INDICATOR=$'\033[33m[SSH]\033[0m '
+  SSH_REMOTE_IP="$(ssh_connection_ip)"
+  export SSH_REMOTE_IP
 else
   export SSH_SESSION=no
-  SSH_INDICATOR=""
+  SSH_REMOTE_IP=""
+  export SSH_REMOTE_IP
 fi
 
 y() {
@@ -61,7 +82,11 @@ setup_prompt_bash() {
   local ssh_indicator=""
 
   if [[ "$SSH_SESSION" == "yes" ]]; then
-    ssh_indicator="${COLOR_SSH}[SSH]${COLOR_RESET} "
+    if [[ -n "${SSH_REMOTE_IP:-}" ]]; then
+      ssh_indicator="${COLOR_SSH}[SSH ${SSH_REMOTE_IP}]${COLOR_RESET} "
+    else
+      ssh_indicator="${COLOR_SSH}[SSH]${COLOR_RESET} "
+    fi
   fi
 
   PS1="${ssh_indicator}${COLOR_USER}\u${COLOR_RESET}:${COLOR_DIR}\W${COLOR_RESET}${COLOR_GIT}\$(parse_git_branch)${COLOR_RESET} \$ "
@@ -73,7 +98,11 @@ setup_prompt_zsh() {
 
   zssh_indicator=""
   if [[ "$SSH_SESSION" == "yes" ]]; then
-    zssh_indicator='%F{yellow}[SSH]%f '
+    if [[ -n "${SSH_REMOTE_IP:-}" ]]; then
+      zssh_indicator="%F{yellow}[SSH ${SSH_REMOTE_IP}]%f "
+    else
+      zssh_indicator='%F{yellow}[SSH]%f '
+    fi
   fi
 
   # Username: bright yellow (pairs with Phanes gold accents)
