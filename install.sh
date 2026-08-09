@@ -104,9 +104,38 @@ prepare_stow_targets() {
   backup_if_regular_file "$HOME_DIR/.gitconfig"
 
   local cfg
-  for cfg in yazi micro kitty glow; do
+  for cfg in yazi micro kitty glow tabby; do
     backup_if_regular_file "$HOME_DIR/.config/$cfg"
   done
+}
+
+link_tabby_config() {
+  # Tabby on macOS reads ~/Library/Application Support/tabby/config.yaml
+  # (Linux uses ~/.config/tabby via stow).
+  [[ "$OS" != "macos" ]] && return
+
+  local src="$DOTFILES_DIR/home/config/tabby/config.yaml"
+  local dest_dir="$HOME_DIR/Library/Application Support/tabby"
+  local dest="$dest_dir/config.yaml"
+
+  if [[ ! -f "$src" ]]; then
+    warn "Tabby config missing at $src — skipping"
+    return
+  fi
+
+  log "Link Tabby config -> ~/Library/Application Support/tabby/config.yaml"
+  if [[ "$DRY_RUN" == true ]]; then
+    log "[dry-run] ln -sf $src $dest"
+    return
+  fi
+
+  mkdir -p "$dest_dir"
+  if [[ -e "$dest" && ! -L "$dest" ]]; then
+    local backup="${dest}.bak-pre-dotfiles"
+    log "Backing up $dest -> $backup"
+    mv "$dest" "$backup"
+  fi
+  ln -sf "$src" "$dest"
 }
 
 stow_packages() {
@@ -213,16 +242,17 @@ Next steps:
   1. Reload shell:  source ~/.bashrc   (Linux)  or  source ~/.zshrc   (macOS)
   2. Authenticate GitHub CLI:  gh auth login
   3. Customize CI dashboard:  ~/.config/ci-status.env
-  4. Open kitty and confirm JetBrainsMono Nerd Font renders correctly
+  4. Open Tabby (macOS) or kitty (Linux) and confirm JetBrainsMono Nerd Font
 
 Custom commands:
   y              — yazi file manager (cd on quit)
   mdwatch FILE    — live markdown preview with glow
   view-actions   — watch GitHub Actions dashboard
 
-Kitty shortcuts:
+Split shortcuts (kitty / Tabby):
   Ctrl+Shift+E   — vertical split
   Ctrl+Shift+O   — horizontal split
+  Ctrl+Shift+W   — close split
   Alt+arrows     — navigate splits
 
 Update workflow:
@@ -241,6 +271,7 @@ main() {
   run_bootstrap
   prepare_stow_targets
   stow_packages
+  link_tabby_config
   link_ci_status
   install_ci_config
   setup_mac_zprofile

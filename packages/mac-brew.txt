@@ -1,6 +1,6 @@
 brew "micro"
 brew "glow"
-cask "kitty"
+cask "tabby"
 brew "lsd"
 brew "gh"
 brew "jq"

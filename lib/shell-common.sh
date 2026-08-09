@@ -76,6 +76,6 @@ setup_prompt_zsh() {
     zssh_indicator='%F{yellow}[SSH]%f '
   fi
 
-  # Username: bright yellow (pairs with Kitty Phanes gold accents)
+  # Username: bright yellow (pairs with Phanes gold accents)
   PROMPT="${zssh_indicator}%F{11}%n%f:%F{magenta}%1~%f%F{red}\$(parse_git_branch)%f \$ "
 }
