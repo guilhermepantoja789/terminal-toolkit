@@ -37,14 +37,29 @@ ssh_connection_ip() {
   printf '%s' "$ip"
 }
 
+# Label for the SSH prompt: short hostname (e.g. home-1) when available, else IP.
+ssh_connection_label() {
+  local host=""
+  host="$(hostname -s 2>/dev/null || hostname 2>/dev/null || true)"
+  if [[ -n "$host" && "$host" != "localhost" && "$host" != "localhost.localdomain" ]]; then
+    printf '%s' "$host"
+    return
+  fi
+  ssh_connection_ip
+}
+
 if [[ -n "${SSH_CONNECTION:-}" || -n "${SSH_CLIENT:-}" ]]; then
   export SSH_SESSION=yes
-  SSH_REMOTE_IP="$(ssh_connection_ip)"
+  SSH_REMOTE_HOST="$(ssh_connection_label)"
+  export SSH_REMOTE_HOST
+  # Keep old name for any local overrides that still read it.
+  SSH_REMOTE_IP="$SSH_REMOTE_HOST"
   export SSH_REMOTE_IP
 else
   export SSH_SESSION=no
+  SSH_REMOTE_HOST=""
   SSH_REMOTE_IP=""
-  export SSH_REMOTE_IP
+  export SSH_REMOTE_HOST SSH_REMOTE_IP
 fi
 
 y() {
@@ -82,8 +97,8 @@ setup_prompt_bash() {
   local ssh_indicator=""
 
   if [[ "$SSH_SESSION" == "yes" ]]; then
-    if [[ -n "${SSH_REMOTE_IP:-}" ]]; then
-      ssh_indicator="${COLOR_SSH}[SSH ${SSH_REMOTE_IP}]${COLOR_RESET} "
+    if [[ -n "${SSH_REMOTE_HOST:-}" ]]; then
+      ssh_indicator="${COLOR_SSH}[SSH ${SSH_REMOTE_HOST}]${COLOR_RESET} "
     else
       ssh_indicator="${COLOR_SSH}[SSH]${COLOR_RESET} "
     fi
@@ -98,8 +113,8 @@ setup_prompt_zsh() {
 
   zssh_indicator=""
   if [[ "$SSH_SESSION" == "yes" ]]; then
-    if [[ -n "${SSH_REMOTE_IP:-}" ]]; then
-      zssh_indicator="%F{yellow}[SSH ${SSH_REMOTE_IP}]%f "
+    if [[ -n "${SSH_REMOTE_HOST:-}" ]]; then
+      zssh_indicator="%F{yellow}[SSH ${SSH_REMOTE_HOST}]%f "
     else
       zssh_indicator='%F{yellow}[SSH]%f '
     fi
