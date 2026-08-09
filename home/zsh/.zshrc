@@ -17,3 +17,8 @@ if [[ -f "$DOTFILES_DIR/lib/shell-common.sh" ]]; then
   source "$DOTFILES_DIR/lib/shell-common.sh"
   setup_prompt_zsh
 fi
+
+# Machine-local overrides (Herd, libpq, etc.) — not versioned
+if [[ -f ~/.zshrc.local ]]; then
+  source ~/.zshrc.local
+fi

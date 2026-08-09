@@ -3,3 +3,7 @@
 .DS_Store
 *.swp
 *.bak
+
+# Editor runtime state (stowed under ~/.config/micro)
+home/config/micro/buffers/
+home/config/micro/backups/

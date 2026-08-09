@@ -37,3 +37,9 @@ if [[ -f "$DOTFILES_DIR/lib/shell-common.sh" ]]; then
   . "$DOTFILES_DIR/lib/shell-common.sh"
   setup_prompt_bash
 fi
+
+# Machine-local overrides — not versioned
+if [[ -f ~/.bashrc.local ]]; then
+  # shellcheck source=/dev/null
+  . ~/.bashrc.local
+fi

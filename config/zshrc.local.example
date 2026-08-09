@@ -1,0 +1,17 @@
+# Copy to ~/.zshrc.local and adjust. Sourced at the end of ~/.zshrc.
+
+# Laravel Herd (macOS)
+herd_bin="$HOME/Library/Application Support/Herd/bin"
+if [[ -d "$herd_bin" ]]; then
+  export PATH="$herd_bin:$PATH"
+fi
+
+herd_php84_ini="$HOME/Library/Application Support/Herd/config/php/84"
+if [[ -d "$herd_php84_ini" ]]; then
+  export HERD_PHP_84_INI_SCAN_DIR="$herd_php84_ini/"
+fi
+
+# Homebrew libpq (psql, etc.)
+if [[ -d /opt/homebrew/opt/libpq/bin ]]; then
+  export PATH="/opt/homebrew/opt/libpq/bin:$PATH"
+fi
