@@ -149,7 +149,6 @@ hotkeys:
   tab-18: []
   tab-19: []
   tab-20: []
-  # Terminator / kitty muscle memory + macOS defaults
   split-right:
     - ⌘-Shift-D
     - Ctrl-Shift-E
@@ -204,27 +203,27 @@ terminal:
   linePadding: 3
   searchOptions: {}
   colorScheme:
-    name: Phanes
-    foreground: '#9f999b'
-    background: '#222021'
-    cursor: '#996e00'
+    name: base2tone-space-dark
+    foreground: '#a1a1b5'
+    background: '#24242e'
+    cursor: '#b25424'
     colors:
-      - '#222021'
-      - '#6e5b86'
-      - '#cca133'
-      - '#ffcc4d'
-      - '#8b78a3'
-      - '#cca133'
-      - '#9067cf'
-      - '#9f999b'
-      - '#635f60'
-      - '#ddaf3c'
-      - '#2f2d2e'
-      - '#565254'
-      - '#706b6d'
-      - '#b28ce7'
-      - '#c39622'
-      - '#ffebf2'
+      - '#24242e'
+      - '#7676f4'
+      - '#ec7336'
+      - '#fe8c52'
+      - '#767693'
+      - '#ec7336'
+      - '#8a8aad'
+      - '#a1a1b5'
+      - '#5b5b76'
+      - '#f37b3f'
+      - '#333342'
+      - '#515167'
+      - '#737391'
+      - '#cecee3'
+      - '#e66e33'
+      - '#ebebff'
   customColorSchemes:
     - name: Phanes
       foreground: '#9f999b'
@@ -247,16 +246,16 @@ terminal:
         - '#b28ce7'
         - '#c39622'
         - '#ffebf2'
+  hideTabIndex: true
 ssh: {}
 clickableLinks: {}
 accessibility: {}
 appearance:
-  dock: off
-  tabsLocation: bottom
   theme: standard
   frame: thin
   opacity: 0.95
   vibrancy: false
+  tabsInFullscreen: true
 hacks: {}
 providerBlacklist: []
 commandBlacklist: []
