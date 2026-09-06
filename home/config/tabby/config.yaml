@@ -1,6 +1,21 @@
 version: 8
-profiles: []
-groups: []
+profiles:
+  - id: local:ssh-vps
+    name: vps
+    type: local
+    group: SSH
+    icon: fas fa-server
+    options:
+      command: /usr/bin/ssh
+      args:
+        - vps
+      env: {}
+      cwd: null
+      pauseAfterExit: true
+groups:
+  - id: SSH
+    name: SSH
+    editable: true
 configSync:
   parts: {}
 hotkeys:
@@ -95,7 +110,7 @@ hotkeys:
   toggle-fullscreen:
     - Ctrl+⌘+F
   close-tab:
-    - ⌘-W
+    - ⌘-Q
   reopen-tab:
     - ⌘-Shift-T
   toggle-last-tab: []
@@ -149,12 +164,8 @@ hotkeys:
   tab-18: []
   tab-19: []
   tab-20: []
-  split-right:
-    - ⌘-Shift-D
-    - Ctrl-Shift-E
   split-bottom:
-    - ⌘-D
-    - Ctrl-Shift-O
+    - ⌘-G
   split-left: []
   split-top: []
   pane-nav-right:
@@ -185,8 +196,8 @@ hotkeys:
   pane-maximize:
     - ⌘-⌥-Enter
   close-pane:
-    - ⌘-Shift-W
     - Ctrl-Shift-W
+    - ⌘-W
   pane-increase-vertical: []
   pane-decrease-vertical: []
   pane-increase-horizontal: []
@@ -197,33 +208,34 @@ hotkeys:
     - ⌘-Shift-E
   command-selector:
     - ⌘-Shift-P
+  split-right:
+    - ⌘-D
 terminal:
   font: JetBrainsMono Nerd Font
-  fontSize: 14
   linePadding: 3
   searchOptions: {}
   colorScheme:
-    name: base2tone-space-dark
-    foreground: '#a1a1b5'
-    background: '#24242e'
-    cursor: '#b25424'
+    name: Dark Pastel
+    foreground: '#ffffff'
+    background: '#000000'
+    cursor: '#bbbbbb'
     colors:
-      - '#24242e'
-      - '#7676f4'
-      - '#ec7336'
-      - '#fe8c52'
-      - '#767693'
-      - '#ec7336'
-      - '#8a8aad'
-      - '#a1a1b5'
-      - '#5b5b76'
-      - '#f37b3f'
-      - '#333342'
-      - '#515167'
-      - '#737391'
-      - '#cecee3'
-      - '#e66e33'
-      - '#ebebff'
+      - '#000000'
+      - '#ff5555'
+      - '#55ff55'
+      - '#ffff55'
+      - '#5555ff'
+      - '#ff55ff'
+      - '#55ffff'
+      - '#bbbbbb'
+      - '#555555'
+      - '#ff5555'
+      - '#55ff55'
+      - '#ffff55'
+      - '#5555ff'
+      - '#ff55ff'
+      - '#55ffff'
+      - '#ffffff'
   customColorSchemes:
     - name: Phanes
       foreground: '#9f999b'
@@ -247,7 +259,41 @@ terminal:
         - '#c39622'
         - '#ffebf2'
   hideTabIndex: true
-ssh: {}
+  lightColorScheme:
+    name: Phanes
+    foreground: '#9f999b'
+    background: '#222021'
+    cursor: '#996e00'
+    colors:
+      - '#222021'
+      - '#6e5b86'
+      - '#cca133'
+      - '#ffcc4d'
+      - '#8b78a3'
+      - '#cca133'
+      - '#9067cf'
+      - '#9f999b'
+      - '#635f60'
+      - '#ddaf3c'
+      - '#2f2d2e'
+      - '#565254'
+      - '#706b6d'
+      - '#b28ce7'
+      - '#c39622'
+      - '#ffebf2'
+  fontWeightBold: 900
+  fontWeight: 600
+  cursor: beam
+  paletteGenerate: true
+  paletteHarmonious: true
+ssh:
+  warnOnClose: true
+  verifyHostKeys: true
+  knownHosts:
+    - host: 10.77.77.244
+      port: 22
+      type: ecdsa-sha2-nistp256
+      digest: KI2fqgdGx6hwy0d9IN6uJURrr3w32zwlI7OsloXEfZ4=
 clickableLinks: {}
 accessibility: {}
 appearance:
