@@ -1,5 +1,8 @@
 # Dotfiles — bash (Debian/Linux)
 
+# PATH before the interactive-only return so `debian` / `vm` work in bash -c too.
+export PATH="$HOME/.local/bin:$PATH"
+
 case $- in
   *i*) ;;
   *) return ;;
@@ -31,7 +34,25 @@ if ! shopt -oq posix; then
   fi
 fi
 
+# Resolve repo root: valid env → install pin → this symlink (stow) → ~/dotfiles
+if [[ -n "${DOTFILES_DIR:-}" && ! -f "$DOTFILES_DIR/lib/shell-common.sh" ]]; then
+  unset DOTFILES_DIR
+fi
+if [[ -z "${DOTFILES_DIR:-}" && -f "${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles-dir" ]]; then
+  DOTFILES_DIR="$(tr -d '\n' <"${XDG_CONFIG_HOME:-$HOME/.config}/dotfiles-dir")"
+fi
+if [[ -z "${DOTFILES_DIR:-}" || ! -f "${DOTFILES_DIR}/lib/shell-common.sh" ]]; then
+  _dotfiles_bashrc="${BASH_SOURCE[0]:-$HOME/.bashrc}"
+  if [[ -L "$_dotfiles_bashrc" ]]; then
+    _dotfiles_real="$(readlink -f "$_dotfiles_bashrc" 2>/dev/null || true)"
+    if [[ -n "$_dotfiles_real" && -f "$(dirname "$_dotfiles_real")/../../lib/shell-common.sh" ]]; then
+      DOTFILES_DIR="$(cd "$(dirname "$_dotfiles_real")/../.." && pwd)"
+    fi
+  fi
+  unset _dotfiles_bashrc _dotfiles_real
+fi
 export DOTFILES_DIR="${DOTFILES_DIR:-$HOME/dotfiles}"
+
 if [[ -f "$DOTFILES_DIR/lib/shell-common.sh" ]]; then
   # shellcheck source=/dev/null
   . "$DOTFILES_DIR/lib/shell-common.sh"
@@ -43,3 +64,6 @@ if [[ -f ~/.bashrc.local ]]; then
   # shellcheck source=/dev/null
   . ~/.bashrc.local
 fi
+
+# Flow Sistemas — flowctl
+alias flowctl='/home/guilhermepantoja/Projects/flow-sistemas/flow-ops/bin/flowctl'

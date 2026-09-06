@@ -209,6 +209,20 @@ install_ci_config() {
   cp "$example" "$dest"
 }
 
+pin_dotfiles_dir() {
+  # Persist absolute repo path so shells work even when the repo is not at ~/dotfiles.
+  local pin="$HOME_DIR/.config/dotfiles-dir"
+
+  log "Pin DOTFILES_DIR -> ~/.config/dotfiles-dir"
+  if [[ "$DRY_RUN" == true ]]; then
+    log "[dry-run] write $DOTFILES_DIR to $pin"
+    return
+  fi
+
+  mkdir -p "$HOME_DIR/.config"
+  printf '%s\n' "$DOTFILES_DIR" >"$pin"
+}
+
 setup_mac_zprofile() {
   [[ "$OS" != "macos" ]] && return
 
@@ -216,6 +230,18 @@ setup_mac_zprofile() {
   local zprofile="$HOME_DIR/.zprofile"
 
   if [[ -f "$zprofile" ]] && grep -qF "$marker" "$zprofile"; then
+    # Keep pin in sync when re-installing from a moved checkout.
+    if grep -qF 'export DOTFILES_DIR=' "$zprofile"; then
+      if [[ "$DRY_RUN" == true ]]; then
+        log "[dry-run] refresh DOTFILES_DIR in ~/.zprofile"
+      else
+        # portable in-place refresh of the export line
+        local tmp
+        tmp="$(mktemp)"
+        sed "s|^export DOTFILES_DIR=.*|export DOTFILES_DIR=\"$DOTFILES_DIR\"|" "$zprofile" >"$tmp"
+        mv "$tmp" "$zprofile"
+      fi
+    fi
     return
   fi
 
@@ -256,7 +282,7 @@ Split shortcuts (kitty / Tabby):
   Alt+arrows     — navigate splits
 
 Update workflow:
-  cd ~/dotfiles && git pull && ./install.sh --configs-only
+  cd \"\$DOTFILES_DIR\" && git pull && ./install.sh --configs-only
 EOF
 }
 
@@ -274,6 +300,7 @@ main() {
   link_tabby_config
   link_ci_status
   install_ci_config
+  pin_dotfiles_dir
   setup_mac_zprofile
 
   if [[ "$DRY_RUN" == true ]]; then
