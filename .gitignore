@@ -1,9 +1,51 @@
+# Secrets / local env (keep *.env.example)
 *.env
 !*.env.example
-.DS_Store
-*.swp
-*.bak
+*.pem
+*.p12
+*.pfx
+id_rsa
+id_ed25519
+*.token
 
-# Editor runtime state (stowed under ~/.config/micro)
+# Machine-local shell (Herd, libpq, host PATH) — copy from config/*.example
+.zshrc.local
+.bashrc.local
+**/.zshrc.local
+**/.bashrc.local
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+*~
+*.swp
+*.swo
+*.orig
+*.rej
+
+# Backups (install.sh + editors)
+*.bak
+*.backup
+*.bak-pre-dotfiles
+
+# Logs
+*.log
+
+# micro — runtime written into the stowed ~/.config/micro
 home/config/micro/buffers/
 home/config/micro/backups/
+home/config/micro/plug/
+
+# kitty — keep kitty.conf + current-theme.conf
+home/config/kitty/*.session
+home/config/kitty/dump-*.txt
+
+# tabby — stowed to ~/.config/tabby (Linux); macOS uses Application Support.
+# Electron dumps cookies, caches, window state next to config.yaml.
+home/config/tabby/**
+!home/config/tabby/config.yaml
+
+# yazi — plugin/flavor installs via `ya pack`
+home/config/yazi/plugins/
+home/config/yazi/flavors/
+home/config/yazi/package.toml
