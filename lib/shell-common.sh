@@ -81,7 +81,7 @@ mdwatch() {
     return 1
   fi
 
-  local theme file renderer
+  local theme file renderer tty_dev
   theme="${XDG_CONFIG_HOME:-$HOME/.config}/glow/tema-flow.json"
   file="$1"
   renderer="$DOTFILES_DIR/bin/mdwatch-render.sh"
@@ -89,12 +89,15 @@ mdwatch() {
     echo "Erro: renderer não encontrado: $renderer" >&2
     return 1
   fi
+  # watchexec children often cannot use /dev/tty; pass the tty that started mdwatch.
+  tty_dev="$(tty 2>/dev/null || true)"
+  [[ -n "$tty_dev" && -r "$tty_dev" ]] || tty_dev="/dev/tty"
   # --shell=none keeps paths intact (watchexec 2 otherwise joins argv into $SHELL).
-  # mdwatch-render.sh re-reads TTY size so glow does not stick at 80 or the 120 cap.
+  # mdwatch-render.sh re-reads size from that tty so wrap tracks window resizes.
   if watchexec --help 2>/dev/null | grep -q -- '--shell'; then
-    watchexec -c -w "$file" --shell=none -- "$renderer" "$theme" "$file"
+    watchexec -c -w "$file" --shell=none -- "$renderer" "$theme" "$file" "$tty_dev"
   else
-    watchexec -c -w "$file" -- "$renderer" "$theme" "$file"
+    watchexec -c -w "$file" -- "$renderer" "$theme" "$file" "$tty_dev"
   fi
 }
 

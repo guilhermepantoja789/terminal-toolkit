@@ -1,13 +1,12 @@
 [opener]
 edit = [
-    { run = 'micro %s', block = true, desc = "micro", for = "unix" },
+	{ run = '${EDITOR:-micro} %s', block = true, desc = "editor", for = "unix" },
 ]
 
 [open]
 prepend_rules = [
-    { mime = "folder/*", use = [ "open", "reveal" ] },
-    { mime = "text/*", use = [ "edit" ] },
-    { mime = "inode/empty", use = [ "edit" ] },
-    { mime = "application/{json,ndjson,javascript,toml,xml,yaml,x-yaml,wine-extension-ini}", use = [ "edit" ] },
-    { url = "*", use = [ "edit" ] },
+	{ mime = "text/*", use = [ "edit" ] },
+	{ mime = "inode/empty", use = [ "edit" ] },
+	{ mime = "application/{json,ndjson,javascript,toml,xml,yaml,x-yaml,wine-extension-ini}", use = [ "edit" ] },
+	{ url = "*", use = [ "edit" ] },
 ]

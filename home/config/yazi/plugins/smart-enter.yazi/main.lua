@@ -1,7 +1,7 @@
---- Vendored from yazi-rs/plugins (smart-enter.yazi), MIT.
 --- @since 25.5.31
 --- @sync entry
 
+-- Vendored from yazi-rs/plugins (smart-enter.yazi), MIT.
 local function setup(self, opts) self.open_multi = opts.open_multi end
 
 local function entry(self)

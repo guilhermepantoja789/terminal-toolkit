@@ -142,6 +142,27 @@ link_tabby_config() {
   ln -sf "$src" "$dest"
 }
 
+# Glow on macOS may still read ~/Library/Preferences/glow/glow.yml (width: 80)
+# even when ~/.config/glow is stowed. Neutralize that pin so mdwatch can wrap to TTY size.
+fix_macos_glow_prefs() {
+  [[ "$OS" != "macos" ]] && return
+
+  local prefs="$HOME_DIR/Library/Preferences/glow/glow.yml"
+  [[ -f "$prefs" ]] || return
+
+  if grep -qE '^[[:space:]]*width:[[:space:]]*80[[:space:]]*$' "$prefs" 2>/dev/null; then
+    log "Unpin glow width in ~/Library/Preferences/glow/glow.yml (was 80)"
+    if [[ "$DRY_RUN" == true ]]; then
+      log "[dry-run] set width: 0 in $prefs"
+      return
+    fi
+    local tmp
+    tmp="$(mktemp)"
+    sed 's/^[[:space:]]*width:[[:space:]]*80[[:space:]]*$/width: 0/' "$prefs" >"$tmp"
+    mv "$tmp" "$prefs"
+  fi
+}
+
 stow_packages() {
   if ! command -v stow >/dev/null 2>&1; then
     if [[ "$DRY_RUN" == true ]]; then
@@ -342,6 +363,7 @@ main() {
   prepare_stow_targets
   stow_packages
   link_tabby_config
+  fix_macos_glow_prefs
   link_bin_scripts
   install_ci_config
   install_local_shell_overrides
