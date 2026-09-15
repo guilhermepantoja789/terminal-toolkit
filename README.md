@@ -19,8 +19,12 @@ Preview sem alterar o sistema:
 Atualizar configs após `git pull`:
 
 ```bash
-cd ~/dotfiles && git pull && ./install.sh --configs-only
+cd "${DOTFILES_DIR:-$HOME/dotfiles}" && git pull && ./install.sh --configs-only
+source ~/.bashrc    # Linux
+source ~/.zshrc     # macOS
 ```
+
+Para atualizar também pacotes (yazi no Linux, brew no Mac): `./install.sh` sem `--configs-only`.
 
 ## O que instala
 
@@ -40,9 +44,10 @@ cd ~/dotfiles && git pull && ./install.sh --configs-only
 
 | Comando | Descrição |
 |---------|-----------|
-| `y` | Abre yazi; ao sair, `cd` para o diretório selecionado |
-| `mdwatch arquivo.md` | Preview live de Markdown com glow + watchexec |
+| `y` | Abre yazi; Enter abre arquivo com micro (diretório: entra nele); ao sair, `cd` para o selecionado |
+| `mdwatch arquivo.md` | Preview live de Markdown com glow, usando a largura atual do terminal |
 | `view-actions` | Dashboard GitHub Actions (atualiza a cada 15s) |
+| `sync-ci-repos` | Atualiza a lista de repos do dashboard a partir do GitHub |
 
 ### GitHub Actions dashboard
 
@@ -51,6 +56,14 @@ Config em `~/.config/ci-status.env` (criado na primeira instalação a partir de
 ```bash
 ORG=sua-org-github
 REPOS=(repo-a repo-b repo-c)
+```
+
+Atualizar a lista (org repos com workflows > 0):
+
+```bash
+sync-ci-repos                 # GitHub → example + ~/.config/ci-status.env
+sync-ci-repos --from-example  # example → ~/.config/ci-status.env
+./install.sh --refresh-ci-config
 ```
 
 Testar manualmente:
@@ -78,6 +91,8 @@ No macOS o Tabby também mantém os atalhos nativos (`⌘-D` / `⌘-Shift-D`).
 
 Lógica compartilhada em `lib/shell-common.sh` (prompt, `y`, `mdwatch`, `view-actions`).
 
+Overrides da máquina: `~/.zshrc.local` / `~/.bashrc.local` (não versionados; ver `config/*.local.example`).
+
 Aliases comuns:
 
 - `ls`, `la`, `lt` → lsd
@@ -103,6 +118,7 @@ dotfiles/
 │   └── config/tabby/    # + symlink macOS → Application Support
 ├── lib/shell-common.sh
 ├── bin/ci-status.sh
+├── bin/sync-ci-repos.sh
 └── config/ci-status.env.example
 ```
 

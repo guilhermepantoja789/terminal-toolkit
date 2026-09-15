@@ -5,6 +5,8 @@
 export PATH="$HOME/.local/bin:$HOME/.config/composer/vendor/bin:$PATH"
 export EDITOR="micro"
 export VISUAL="micro"
+# Glow on macOS otherwise reads ~/Library/Preferences/glow (not the stowed ~/.config/glow).
+export GLOW_CONFIG_HOME="${XDG_CONFIG_HOME:-$HOME/.config}/glow"
 
 # Optional runtimes (no-op if not installed)
 [[ -f "$HOME/.cargo/env" ]] && . "$HOME/.cargo/env"
@@ -67,7 +69,7 @@ y() {
   tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
   yazi "$@" --cwd-file="$tmp"
   if cwd="$(command cat -- "$tmp")" && [[ -n "$cwd" && "$cwd" != "$PWD" ]]; then
-    builtin cd -- "$cwd"
+    builtin cd -- "$cwd" || return
   fi
   rm -f -- "$tmp"
 }
@@ -79,11 +81,21 @@ mdwatch() {
     return 1
   fi
 
-  local theme cols
+  local theme file renderer
   theme="${XDG_CONFIG_HOME:-$HOME/.config}/glow/tema-flow.json"
-  cols="$(tput cols 2>/dev/null || echo 80)"
-  # Pass args after -- so filenames with spaces/quotes are safe.
-  watchexec -c -e md -- env CLICOLOR_FORCE=1 glow -s "$theme" -w "$cols" "$1"
+  file="$1"
+  renderer="$DOTFILES_DIR/bin/mdwatch-render.sh"
+  if [[ ! -x "$renderer" ]]; then
+    echo "Erro: renderer não encontrado: $renderer" >&2
+    return 1
+  fi
+  # --shell=none keeps paths intact (watchexec 2 otherwise joins argv into $SHELL).
+  # mdwatch-render.sh re-reads TTY size so glow does not stick at 80 or the 120 cap.
+  if watchexec --help 2>/dev/null | grep -q -- '--shell'; then
+    watchexec -c -w "$file" --shell=none -- "$renderer" "$theme" "$file"
+  else
+    watchexec -c -w "$file" -- "$renderer" "$theme" "$file"
+  fi
 }
 
 alias view-actions='watch -c -n 15 -- "$HOME/.local/bin/ci-status"'

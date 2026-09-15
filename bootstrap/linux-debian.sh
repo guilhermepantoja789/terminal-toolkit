@@ -11,7 +11,7 @@ if [[ "${1:-}" == "--dry-run" ]]; then
   log "[dry-run] Would run: sudo apt update"
   log "[dry-run] Would install: $(grep -v '^#' "$PACKAGES_FILE" | grep -v '^$' | tr '\n' ' ')"
   log "[dry-run] Would install watchexec via cargo if available"
-  log "[dry-run] Would install yazi to ~/.local/bin if missing"
+  log "[dry-run] Would install or update yazi in ~/.local/bin"
   exit 0
 fi
 
@@ -31,11 +31,30 @@ if command -v cargo >/dev/null 2>&1; then
     cargo install watchexec-cli
   fi
 else
-  log "cargo not found — install rustup or run with --with-rust (skipped watchexec)"
+  log "cargo not found — skipping watchexec (install rustup to enable)"
 fi
 
-if ! command -v yazi >/dev/null 2>&1; then
-  log "Installing yazi to ~/.local/bin..."
+resolve_yazi_version() {
+  if [[ -n "${YAZI_VERSION:-}" ]]; then
+    printf '%s' "$YAZI_VERSION"
+    return
+  fi
+  local tag=""
+  if command -v jq >/dev/null 2>&1; then
+    tag="$(curl -fsSL https://api.github.com/repos/sxyazi/yazi/releases/latest | jq -r '.tag_name // empty' 2>/dev/null || true)"
+  fi
+  tag="${tag#v}"
+  if [[ -z "$tag" || "$tag" == "null" ]]; then
+    tag="26.9.1"
+  fi
+  printf '%s' "$tag"
+}
+
+yazi_installed_version() {
+  yazi --version 2>/dev/null | awk '/Version:/ { print $2; exit }'
+}
+
+install_or_update_yazi() {
   ARCH="$(uname -m)"
   case "$ARCH" in
     x86_64) YAZI_ARCH="x86_64" ;;
@@ -46,15 +65,27 @@ if ! command -v yazi >/dev/null 2>&1; then
       ;;
   esac
 
-  YAZI_VERSION="${YAZI_VERSION:-26.5.6}"
-  YAZI_URL="https://github.com/sxyazi/yazi/releases/download/v${YAZI_VERSION}/yazi-${YAZI_ARCH}-unknown-linux-musl.zip"
+  local wanted current
+  wanted="$(resolve_yazi_version)"
+  current="$(yazi_installed_version)"
+  if command -v yazi >/dev/null 2>&1 && [[ -n "$current" && "$current" == "$wanted" ]]; then
+    log "yazi $current already installed"
+    return
+  fi
 
-  TMPDIR="$(mktemp -d)"
-  trap 'rm -rf "$TMPDIR"' EXIT
-  curl -fsSL "$YAZI_URL" -o "$TMPDIR/yazi.zip"
-  unzip -qo "$TMPDIR/yazi.zip" -d "$TMPDIR"
-  install -m 755 "$TMPDIR/yazi-${YAZI_ARCH}-unknown-linux-musl/yazi" "$HOME/.local/bin/yazi"
+  log "Installing yazi $wanted to ~/.local/bin (was: ${current:-missing})..."
+  mkdir -p "$HOME/.local/bin"
+  YAZI_URL="https://github.com/sxyazi/yazi/releases/download/v${wanted}/yazi-${YAZI_ARCH}-unknown-linux-musl.zip"
+
+  local tmpdir
+  tmpdir="$(mktemp -d)"
+  curl -fsSL "$YAZI_URL" -o "$tmpdir/yazi.zip"
+  unzip -qo "$tmpdir/yazi.zip" -d "$tmpdir"
+  install -m 755 "$tmpdir/yazi-${YAZI_ARCH}-unknown-linux-musl/yazi" "$HOME/.local/bin/yazi"
+  rm -rf "$tmpdir"
   log "yazi installed to ~/.local/bin/yazi"
-fi
+}
+
+install_or_update_yazi
 
 log "Linux bootstrap complete."

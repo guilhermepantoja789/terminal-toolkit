@@ -8,3 +8,4 @@ procps
 stow
 curl
 ca-certificates
+unzip

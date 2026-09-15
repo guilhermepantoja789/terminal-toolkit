@@ -45,7 +45,9 @@ home/config/kitty/dump-*.txt
 home/config/tabby/**
 !home/config/tabby/config.yaml
 
-# yazi — plugin/flavor installs via `ya pack`
-home/config/yazi/plugins/
+# yazi — plugin/flavor installs via `ya pack` (keep vendored smart-enter)
+home/config/yazi/plugins/*
+!home/config/yazi/plugins/smart-enter.yazi/
+!home/config/yazi/plugins/smart-enter.yazi/**
 home/config/yazi/flavors/
 home/config/yazi/package.toml

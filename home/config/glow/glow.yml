@@ -4,7 +4,8 @@ style: "auto"
 mouse: false
 # use pager to display markdown
 pager: false
-# word-wrap at width
-width: 80
+# 0 = do not pin wrap at 80. mdwatch always passes --width with the live TTY size;
+# glow otherwise caps auto-detected width at 120.
+width: 0
 # show all files, including hidden and ignored.
 all: false
