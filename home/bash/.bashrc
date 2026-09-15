@@ -59,11 +59,8 @@ if [[ -f "$DOTFILES_DIR/lib/shell-common.sh" ]]; then
   setup_prompt_bash
 fi
 
-# Machine-local overrides — not versioned
+# Machine-local overrides — not versioned (see config/bashrc.local.example)
 if [[ -f ~/.bashrc.local ]]; then
   # shellcheck source=/dev/null
   . ~/.bashrc.local
 fi
-
-# Flow Sistemas — flowctl
-alias flowctl='/home/guilhermepantoja/Projects/flow-sistemas/flow-ops/bin/flowctl'

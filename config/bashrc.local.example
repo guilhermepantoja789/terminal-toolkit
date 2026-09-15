@@ -1,0 +1,7 @@
+# Copy to ~/.bashrc.local and adjust. Sourced at the end of ~/.bashrc.
+
+# Flow Sistemas — flowctl
+flowctl_bin="$HOME/Projects/flow-sistemas/flow-ops/bin/flowctl"
+if [[ -x "$flowctl_bin" ]]; then
+  alias flowctl="$flowctl_bin"
+fi

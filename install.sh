@@ -2,10 +2,10 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DOTFILES_DIR="$SCRIPT_DIR"
+DOTFILES_DIR="$(cd "${DOTFILES_DIR:-$SCRIPT_DIR}" && pwd)"
 HOME_DIR="$HOME"
 CONFIG_ONLY=false
-SKIP_PACKAGES=false
+REFRESH_CI_CONFIG=false
 DRY_RUN=false
 
 usage() {
@@ -13,13 +13,14 @@ usage() {
 Usage: ./install.sh [OPTIONS]
 
 Options:
-  --configs-only   Symlink configs only (skip package bootstrap)
-  --skip-packages  Alias for --configs-only
-  --dry-run        Preview actions without changing the system
-  -h, --help       Show this help
+  --configs-only        Symlink configs only (skip package bootstrap)
+  --skip-packages       Alias for --configs-only
+  --refresh-ci-config   Replace ~/.config/ci-status.env from the example
+  --dry-run             Preview actions without changing the system
+  -h, --help            Show this help
 
 Environment:
-  DOTFILES_DIR     Override dotfiles location (default: repo root)
+  DOTFILES_DIR          Override dotfiles location (default: this script's repo)
 EOF
 }
 
@@ -30,6 +31,9 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --configs-only|--skip-packages)
       CONFIG_ONLY=true
+      ;;
+    --refresh-ci-config)
+      REFRESH_CI_CONFIG=true
       ;;
     --dry-run)
       DRY_RUN=true
@@ -175,37 +179,68 @@ stow_packages() {
   fi
 }
 
-link_ci_status() {
-  local target="$DOTFILES_DIR/bin/ci-status.sh"
-  local link="$HOME_DIR/.local/bin/ci-status"
-
-  log "Link ci-status -> ~/.local/bin/ci-status"
+link_bin_scripts() {
+  local src name link
   if [[ "$DRY_RUN" == true ]]; then
-    log "[dry-run] ln -sf $target $link"
+    log "[dry-run] link bin/*.sh -> ~/.local/bin"
     return
   fi
 
   mkdir -p "$HOME_DIR/.local/bin"
-  ln -sf "$target" "$link"
-  chmod +x "$target"
+  for src in "$DOTFILES_DIR"/bin/*.sh; do
+    [[ -f "$src" ]] || continue
+    name="$(basename "$src" .sh)"
+    link="$HOME_DIR/.local/bin/$name"
+    log "Link $name -> ~/.local/bin/$name"
+    ln -sf "$src" "$link"
+    chmod +x "$src"
+  done
 }
 
 install_ci_config() {
   local example="$DOTFILES_DIR/config/ci-status.env.example"
   local dest="$HOME_DIR/.config/ci-status.env"
 
-  if [[ -f "$dest" ]]; then
-    log "Keeping existing ~/.config/ci-status.env"
+  if [[ -f "$dest" && "$REFRESH_CI_CONFIG" != true ]]; then
+    log "Keeping existing ~/.config/ci-status.env (use --refresh-ci-config or sync-ci-repos)"
     return
   fi
 
-  log "Creating ~/.config/ci-status.env from example"
+  if [[ "$REFRESH_CI_CONFIG" == true && -f "$dest" ]]; then
+    log "Refreshing ~/.config/ci-status.env from example"
+  else
+    log "Creating ~/.config/ci-status.env from example"
+  fi
   if [[ "$DRY_RUN" == true ]]; then
     log "[dry-run] cp $example $dest"
     return
   fi
 
   mkdir -p "$HOME_DIR/.config"
+  cp "$example" "$dest"
+}
+
+install_local_shell_overrides() {
+  local example dest
+  if [[ "$OS" == "linux" ]]; then
+    example="$DOTFILES_DIR/config/bashrc.local.example"
+    dest="$HOME_DIR/.bashrc.local"
+  else
+    example="$DOTFILES_DIR/config/zshrc.local.example"
+    dest="$HOME_DIR/.zshrc.local"
+  fi
+
+  [[ -f "$example" ]] || return 0
+  if [[ -f "$dest" ]]; then
+    log "Keeping existing $dest"
+    return
+  fi
+
+  log "Creating $dest from example"
+  if [[ "$DRY_RUN" == true ]]; then
+    log "[dry-run] cp $example $dest"
+    return
+  fi
   cp "$example" "$dest"
 }
 
@@ -268,12 +303,14 @@ Next steps:
   1. Reload shell:  source ~/.bashrc   (Linux)  or  source ~/.zshrc   (macOS)
   2. Authenticate GitHub CLI:  gh auth login
   3. Customize CI dashboard:  ~/.config/ci-status.env
+     (refresh list: sync-ci-repos   or   ./install.sh --refresh-ci-config)
   4. Open Tabby (macOS) or kitty (Linux) and confirm JetBrainsMono Nerd Font
 
 Custom commands:
   y              — yazi file manager (cd on quit)
   mdwatch FILE    — live markdown preview with glow
   view-actions   — watch GitHub Actions dashboard
+  sync-ci-repos  — refresh CI repo list from GitHub
 
 Split shortcuts (kitty / Tabby):
   Ctrl+Shift+E   — vertical split
@@ -283,12 +320,19 @@ Split shortcuts (kitty / Tabby):
 
 Update workflow:
   cd \"\$DOTFILES_DIR\" && git pull && ./install.sh --configs-only
+  source ~/.bashrc   (Linux)  or  source ~/.zshrc   (macOS)
+  # packages + yazi binary: ./install.sh
 EOF
 }
 
 main() {
   log "Detected OS: $OS"
   log "Dotfiles dir: $DOTFILES_DIR"
+
+  if [[ ! -f "$DOTFILES_DIR/lib/shell-common.sh" ]]; then
+    echo "DOTFILES_DIR is not this repo: $DOTFILES_DIR" >&2
+    exit 1
+  fi
 
   if ! command -v stow >/dev/null 2>&1 && [[ "$DRY_RUN" != true ]]; then
     warn "GNU stow not found — bootstrap will install it"
@@ -298,8 +342,9 @@ main() {
   prepare_stow_targets
   stow_packages
   link_tabby_config
-  link_ci_status
+  link_bin_scripts
   install_ci_config
+  install_local_shell_overrides
   pin_dotfiles_dir
   setup_mac_zprofile
 
